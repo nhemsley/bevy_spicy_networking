@@ -152,7 +152,7 @@ mod server;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use bevy::{prelude::*, utils::Uuid};
-pub use client::{AppNetworkClientMessage, NetworkClient};
+pub use client::{AppNetworkClientMessage, NetworkClient, StandaloneNetworkClient};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use derive_more::{Deref, Display};
 use error::NetworkError;
@@ -203,6 +203,11 @@ impl ConnectionId {
     /// Check whether this [`ConnectionId`] is a server
     pub fn is_server(&self) -> bool {
         self.uuid == Uuid::nil()
+    }
+
+    /// return the uuid
+    pub fn uuid(&self) -> Uuid {
+        self.uuid
     }
 }
 
@@ -315,13 +320,7 @@ impl Plugin for ClientPlugin {
         app.insert_resource(NetworkClient::new());
         app.add_event::<ClientNetworkEvent>();
         app.init_resource::<NetworkSettings>();
-        app.add_system_to_stage(
-            CoreStage::PreUpdate,
-            client::send_client_network_events,
-        );
-        app.add_system_to_stage(
-            CoreStage::PreUpdate,
-            client::handle_connection_event,
-        );
+        app.add_system_to_stage(CoreStage::PreUpdate, client::send_client_network_events);
+        app.add_system_to_stage(CoreStage::PreUpdate, client::handle_connection_event);
     }
 }
